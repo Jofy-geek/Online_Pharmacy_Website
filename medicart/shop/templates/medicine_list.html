@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Medicines - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h1 class="fw-bold mb-1 text-primary">
+            <i class="bi bi-capsules me-2"></i>Medicines Catalog
+          </h1>
+          <p class="text-muted mb-0 fs-6">Browse and manage available medicines</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          {% if user.role == "pharmacist" %}
+            <a href="{% url 'medicine_create' %}" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-1"></i>Add New Medicine
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-light border-0 py-3">
+      <h5 class="mb-0 fw-semibold">
+        <i class="bi bi-list-ul me-2 text-primary"></i>Medicine List
+      </h5>
+
+        <!-- 🔍 Search + 🏥 Pharmacy filter -->
+      <form method="get" class="d-flex gap-2 mt-3">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search by name or brand"
+              class="form-control form-control-sm" style="max-width: 250px;">
+        
+              {% if user.role == "patient" %}
+        <select name="pharmacy" class="form-select form-select-sm" style="max-width: 200px;">
+          <option value="">All Pharmacies</option>
+          {% for ph in pharmacies %}
+            <option value="{{ ph.id }}" {% if pharmacy_id|add:""|stringformat:"s" == ph.id|stringformat:"s" %}selected{% endif %}>
+              {{ ph.pharmacy_name }}
+            </option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        <button type="submit" class="btn btn-sm btn-primary">
+          <i class="bi bi-search"></i> Filter
+        </button>
+        <a href="{% url 'medicine_list' %}" class="btn btn-sm btn-secondary rounded-pill">
+          <i class="bi bi-x-circle"></i> Clear
+        </a>
+      </form>
+    </div>
+
+    <!-- ✅ Wrap the table in a form -->
+    <form method="post" action="{% url 'add_multiple_to_cart' %}">
+      {% csrf_token %}
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          {% if medicines and request.user.role == "patient" %}
+        <div class="card-footer bg-light border-0 py-3 d-flex justify-content-between">
+          <small class="text-muted">
+            Showing {{ medicines|length }} medicine{{ medicines|length|pluralize }}.
+          </small>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-cart-plus me-1"></i>Add Selected to Cart
+          </button>
+        </div>
+      {% endif %}
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                {% if request.user.role == "patient" %}
+                <th>
+                  <input type="checkbox" id="select-all">
+                  <label for="select-all"> Select All to Cart</label>
+                </th>
+                {% else %}
+                <th scope="col" class="fw-semibold text-nowrap">
+                  <i class="bi bi-list-ol me-1 text-primary"></i>Sl No 
+                </th>
+                  {% endif %}
+                <th scope="col" class="fw-semibold text-nowrap">
+                  <i class="bi bi-capsule me-1 text-primary"></i>Name
+                </th>
+                <th scope="col" class="fw-semibold text-nowrap">
+                  <i class="bi bi-award me-1 text-primary"></i>Brand
+                </th>
+                <th scope="col" class="fw-semibold text-nowrap">
+                  <i class="bi bi-tags me-1 text-primary"></i>Category
+                </th>
+                <th scope="col" class="fw-semibold text-nowrap">
+                  <i class="bi bi-hospital me-1 text-primary"></i>Pharmacy
+                </th>
+                <th scope="col" class="fw-semibold text-nowrap">
+                  <i class="bi bi-gear me-1 text-primary"></i>Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for med in medicines %}
+                <tr class="border-bottom">
+                  {% if request.user.role == "patient" %}
+                  <td>
+                    <input type="checkbox" name="selected_medicines" value="{{ med.id }}">
+                    <label for=""><i class="bi bi-cart-plus"></i></label>
+                  </td>
+                  {% else %}
+                  <td class="fw-medium text-nowrap">{{ forloop.counter }}</td>
+                  {% endif %}
+                  <td class="fw-medium">{{ med.name }}
+                    {% if med.image %}
+                      <br>
+                      <img src="{{ med.image.url }}" alt="{{ med.name }}" 
+                           class="img-thumbnail mt-2" style="max-width: 100px;">
+                    {% endif %}
+                  </td>
+                  <td>{{ med.brand|default:"—" }}</td>
+                  <td>
+                    <span class="badge bg-info-subtle text-info px-2 py-1 rounded-pill">
+                      {{ med.category|default:"Uncategorized" }}
+                    </span>
+                  </td>
+                  <td>{{ med.pharmacy.pharmacy_name }}</td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <a href="{% url 'medicine_detail' med.id %}" 
+                         class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        <i class="bi bi-eye me-1"></i>View
+                      </a>
+                      {% if user.role == "pharmacist" %}
+                        <a href="{% url 'medicine_update' med.id %}" 
+                           class="btn btn-outline-info btn-sm rounded-pill px-3">
+                          <i class="bi bi-pencil me-1"></i>Edit
+                        </a>
+                        <a href="{% url 'medicine_delete' med.id %}" 
+                           class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                           onclick="return confirm('Are you sure?')">
+                          <i class="bi bi-trash me-1"></i>Delete
+                        </a>
+                      {% endif %}
+                        {% if user.is_superuser %}
+                            <a href="{% url 'medicine_toggle' med.id %}"
+                              class="btn btn-sm rounded-pill px-3
+                                      {% if med.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                              {% if med.is_active %}
+                                <i class="bi bi-slash-circle me-1"></i>Deactivate
+                              {% else %}
+                                <i class="bi bi-check-circle me-1"></i>Activate
+                              {% endif %}
+                            </a>
+                          {% endif %}
+                        </div>
+
+                        {% if not med.is_active %}
+                          <div class="mt-1">
+                            <span class="badge bg-danger">Inactive</span>
+                          </div>
+                        {% endif %}
+                     
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                    <p class="mb-0">No medicines found.</p>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      
+    </form>
+  </div>
+</div>
+
+<script>
+  // ✅ Select all checkboxes
+  document.getElementById("select-all").addEventListener("change", function(e) {
+    document.querySelectorAll("input[name='selected_medicines']").forEach(cb => {
+      cb.checked = e.target.checked;
+    });
+  });
+</script>
+
+<style>
+  .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+  }
+</style>
+{% endblock %}

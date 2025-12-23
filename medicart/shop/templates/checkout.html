@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Checkout — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 py-5" style="background: #f8fffe;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold" style="background: linear-gradient(135deg, #2b318a, #4f60d1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            <i class="bi bi-lock-fill me-3"></i>Secure Checkout
+          </h1>
+          <p class="text-muted fs-5">Complete your order in seconds</p>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="row g-5">
+            <!-- Left: Order Summary -->
+            <div class="col-lg-5 col-xl-5">
+              <div class="card border-0 shadow-lg rounded-4 overflow-hidden sticky-top" style="top: 100px;">
+                <div class="card-header bg-gradient-teal text-white py-4">
+                  <h4 class="mb-0 fw-bold text-center">
+                    <i class="bi bi-bag-check-fill me-2"></i>Order Summary
+                  </h4>
+                </div>
+                <div class="card-body p-4">
+                  {% for item in cart.items.all %}
+                  <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    {% if item.medicine.image %}
+                      <img src="{{ item.medicine.image.url }}" class="rounded-3 shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
+                    {% else %}
+                      <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="bi bi-capsule text-teal"></i>
+                      </div>
+                    {% endif %}
+                    <div class="flex-grow-1">
+                      <h6 class="fw-bold mb-1">{{ item.medicine.name }}</h6>
+                      <small class="text-muted">Qty: {{ item.quantity }}</small>
+                    </div>
+                    <div class="fw-bold text-success">₹{{ item.subtotal|floatformat:2 }}</div>
+                  </div>
+                  {% endfor %}
+
+                  <hr class="my-4 border-secondary-subtle">
+
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold">Subtotal</h5>
+                    <h5 class="text-success">₹{{ cart.total_price|floatformat:2 }}</h5>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Delivery</span>
+                    <span class="text-success fw-bold">FREE</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center pt-3 border-top border-3 border-success">
+                    <h3 class="fw-bold text-dark mb-0">Total Amount</h3>
+                    <h3 class="text-success fw-bold mb-0">₹{{ cart.total_price|floatformat:2 }}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Checkout Form -->
+            <div class="col-lg-7 col-xl-7">
+              <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-4 border-bottom">
+                  <h4 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-truck me-2 text-primary"></i>Delivery & Payment Details
+                  </h4>
+                </div>
+
+                <div class="card-body p-5">
+
+                  <!-- Delivery Address -->
+                  <div class="mb-5">
+                    <label class="form-label fw-bold d-flex align-items-center gap-2 text-dark fs-5">
+                      <i class="bi bi-geo-alt-fill text-primary"></i>
+                      Delivery Address
+                    </label>
+                    <textarea 
+                      name="delivery_address" 
+                      id="delivery_address"
+                      class="form-control form-control-lg rounded-3 shadow-sm"
+                      rows="4"
+                      placeholder="Flat no., Building, Street, Landmark, City, PIN Code"
+                      required
+                    >{{ request.POST.delivery_address }}</textarea>
+
+                    <!-- Hidden coords -->
+                    <input type="hidden" name="latitude" id="latitude" value="{{ request.POST.latitude }}">
+                    <input type="hidden" name="longitude" id="longitude" value="{{ request.POST.longitude }}">
+
+                  </div>
+
+                  <!-- Payment Method -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                      <i class="bi bi-credit-card-2-back-fill me-2 text-primary"></i>Select Payment Method:
+                    </label>
+
+                    <select id="payment-method" class="form-select form-select-lg rounded-3" name="payment_method" required>
+                      <option value="cod">Cash on Delivery</option>
+                      <option value="card">Credit/Debit Card</option>
+                    </select>
+                  </div>
+
+                  <!-- Card Details (Hidden by Default) -->
+                  <div id="card-details" class="mt-3" style="display:none;">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Card Number</label>
+                      <input type="text" class="form-control form-control-lg rounded-3" 
+                             name="card_number" maxlength="16" placeholder="1234 5678 9012 3456">
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Expiry Date</label>
+                        <input type="text" class="form-control form-control-lg rounded-3" 
+                               name="expiry_date" maxlength="5" placeholder="MM/YY">
+                      </div>
+
+                      <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">CVV</label>
+                        <input type="password" class="form-control form-control-lg rounded-3" 
+                               name="cvv" maxlength="3" placeholder="123">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Final Actions -->
+                  <div class="d-flex flex-column flex-md-row gap-2 justify-content-between px-3 mt-5">
+                    <a href="{% url 'view_cart' %}" 
+                       class="btn btn-outline-secondary btn-lg rounded-pill  d-flex align-items-center justify-content-center gap-2">
+                      <i class="bi bi-arrow-left-circle"></i>
+                      Back to Cart
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary btn-lg rounded-pill fw-bold shadow-lg d-flex align-items-center justify-content-center gap-3">
+                      <i class="bi bi-shield-lock-fill"></i>
+                      Place Order
+                    </button>
+                  </div>
+
+                  <div class="text-center mt-4">
+                    <small class="text-muted">
+                      <i class="bi bi-shield-check-fill text-success me-1"></i>
+                      256-bit SSL Encrypted • No hidden charges
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  // Toggle card details visibility
+  document.getElementById("payment-method").addEventListener("change", function () {
+    const cardSection = document.getElementById("card-details");
+    cardSection.style.display = (this.value === "card") ? "block" : "none";
+  });
+
+  // Geolocation functionality
+  document.getElementById("use-location").addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    document.getElementById("use-location").innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Detecting...';
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        document.getElementById("latitude").value = position.coords.latitude;
+        document.getElementById("longitude").value = position.coords.longitude;
+        document.getElementById("use-location").innerHTML = '<i class="bi bi-check-circle-fill"></i> Location Added!';
+        document.getElementById("use-location").classList.add("btn-success");
+        document.getElementById("use-location").disabled = true;
+      },
+      (error) => {
+        document.getElementById("use-location").innerHTML = '<i class="bi bi-geo"></i> Use My Location';
+        alert("Unable to retrieve location. Please type your address manually.");
+      }
+    );
+  });
+</script>
+
+<style>
+  .bg-gradient-teal {
+    background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-light));
+  }
+
+  .hover-lift {
+    transition: all 0.3s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(43,138,126,0.2) !important;
+  }
+
+  textarea:focus {
+    border-color: var(--pharma-teal);
+    box-shadow: 0 0 0 0.25rem rgba(43,138,126,0.15);
+  }
+
+  .btn-success:hover {
+    background: linear-gradient(135deg, #242188, #302bb8);
+    transform: translateY(-4px);
+  }
+  
+  #card-details {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    background: #f9f9f9;
+    margin-top: 15px;
+  }
+  
+  #card-details .form-control {
+    background: white;
+  }
+</style>
+{% endblock %}

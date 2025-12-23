@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <!-- Welcome Hero Section -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h1 class="fw-bold mb-1 text-primary">
+            <i class="bi bi-heart-pulse-fill me-2"></i>Welcome back, {{ user.username }}
+          </h1>
+          <p class="text-muted mb-0 fs-6">Patient | Access your prescriptions, order medicines, and track deliveries seamlessly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats Row -->
+  <div class="row mb-5 g-4">
+
+
+  <!-- Quick Actions Grid -->
+  <div class="row mb-5 g-4">
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3 overflow-hidden">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+              <i class="bi bi-upload text-primary fs-4"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Upload Prescription</h5>
+          </div>
+          <p class="text-muted small mb-3">Scan or upload your prescription to get started with ordering.</p>
+          <a href="{% url 'prescription_list' %}" class="btn btn-primary w-100">
+            <i class="bi bi-arrow-right me-2"></i>View Now
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3 overflow-hidden">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+              <i class="bi bi-search text-success fs-4"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Browse Medicines</h5>
+          </div>
+          <p class="text-muted small mb-3">Search and order from our extensive catalog of medications.</p>
+          <a href="{% url 'medicine_list' %}" class="btn btn-success w-100">
+            <i class="bi bi-arrow-right me-2"></i>Browse Catalog
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3 overflow-hidden">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+              <i class="bi bi-cart text-info fs-4"></i>
+            </div>
+            <h5 class="fw-bold mb-0">My Orders</h5>
+          </div>
+          <p class="text-muted small mb-3">View, cancel, or modify your current and past orders.</p>
+          <a href="{% url 'order_list' %}" class="btn btn-info w-100">
+            <i class="bi bi-arrow-right me-2"></i>View Orders
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3 overflow-hidden">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+              <i class="bi bi-map text-warning fs-4"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Track Delivery</h5>
+          </div>
+          <p class="text-muted small mb-3">Real-time tracking for all your medicine deliveries.</p>
+          <a href="#" class="btn btn-warning text-white w-100" data-bs-toggle="modal" data-bs-target="#deliveryModal">
+            <i class="bi bi-arrow-right me-2"></i>Track Package
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- Delivery Tracking Modal -->
+<div class="modal fade" id="deliveryModal" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white rounded-top-4">
+        <h5 class="modal-title fw-bold mb-0" id="deliveryModalLabel">
+          <i class="bi bi-truck me-2"></i>Track Your Delivery
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted">Enter your order ID to track the latest status.</p>
+
+        <!-- Form to submit Order ID -->
+        <form method="get" action="{% url 'track_order_redirect'  %}">
+          <div class="input-group mb-3">
+            <input type="text" name="order_id" class="form-control" placeholder="Order ID" required>
+            <button type="submit" class="btn btn-primary">Track</button>
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer bg-light rounded-bottom-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Spending History Modal -->
+<div class="modal fade" id="spendingModal" tabindex="-1" aria-labelledby="spendingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-warning text-dark rounded-top-4">
+        <h5 class="modal-title fw-bold mb-0" id="spendingModalLabel">
+          <i class="bi bi-wallet2 me-2"></i>Spending History
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="text-muted">View your purchase history and spending summary.</p>
+        <!-- Placeholder for table or chart -->
+        <div class="text-center py-4">
+          <i class="bi bi-graph-down fs-1 text-warning"></i>
+          <p class="mt-2 mb-0 text-muted">Detailed history coming soon...</p>
+        </div>
+      </div>
+      <div class="modal-footer bg-light rounded-bottom-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <a href="#" class="btn btn-warning">Download PDF</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+  }
+  .bg-primary.bg-opacity-10 {
+    color: #0d6efd;
+  }
+</style>
+
+<script>
+
+  // Optional: Add some interactivity, like updating stats via AJAX
+  document.addEventListener('DOMContentLoaded', function() {
+    // Placeholder for dynamic content loading
+    console.log('Patient Dashboard Loaded');
+  });
+</script>
+{% endblock %}

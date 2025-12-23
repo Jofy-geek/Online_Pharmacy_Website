@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <h2 class="text-success">✅ Payment Successful!</h2>
+  <p>Thank you for your purchase, {{ user.username }}.</p>
+
+  <div class="card shadow-sm my-4">
+    <div class="card-body">
+      <h5>Order Summary</h5>
+      <p><strong>Order ID:</strong> {{ order.id }}</p>
+      <p><strong>Total Amount:</strong> ₹{{ order.total_amount }}</p>
+      <p><strong>Delivery Address:</strong> {{ order.delivery_address }}</p>
+    </div>
+  </div>
+
+  <a href="{% url 'medicine_list' %}" class="btn btn-primary">
+    Continue Shopping
+  </a>
+</div>
+{% endblock %}

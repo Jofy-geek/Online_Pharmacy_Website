@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <!-- Welcome Hero Section -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h1 class="fw-bold mb-1 text-primary">
+            <i class="bi bi-truck-flatbed-fill me-2"></i>Welcome back, {{ user.username }}
+          </h1>
+          <p class="text-muted mb-0 fs-6">Delivery Personnel | Manage assigned deliveries and update statuses in real-time.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats Row -->
+  <div class="row mb-5 g-4">
+    <!-- Pending Deliveries -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3">
+        <div class="card-body text-center p-4">
+          <div class="icon-wrapper bg-primary bg-opacity-10 squared-circle p-3 mx-auto mb-3">
+            <i class="bi bi-hourglass-split text-primary fs-2"></i>
+          </div>
+          <h3 class="fw-bold mb-1">{{ pending_deliveries|default:0 }}</h3>
+          <p class="fw-semibold text-dark mb-1">Pending Deliveries</p>
+          <p class="text-muted small mb-3">View all assigned deliveries and their current statuses.</p>
+          <a href="{% url 'delivery_list' %}" class="btn btn-outline-primary btn-sm w-100">
+            <i class="bi bi-arrow-right me-1"></i>View Deliveries
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed Today -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3">
+        <div class="card-body text-center p-4">
+          <div class="icon-wrapper bg-success bg-opacity-10 squared-circle p-3 mx-auto mb-3">
+            <i class="bi bi-check-lg text-success fs-2"></i>
+          </div>
+          <h3 class="fw-bold mb-1">{{ completed_today|default:0 }}</h3>
+          <p class="fw-semibold text-dark mb-1">Completed Today</p>
+          <p class="text-muted small mb-3">View all completed deliveries for the day.</p>
+          <a href="#" class="btn btn-outline-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#completionModal">
+            <i class="bi bi-eye me-1"></i>View Details
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Track Route -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3">
+        <div class="card-body text-center p-4">
+          <div class="icon-wrapper bg-info bg-opacity-10 squared-circle p-3 mx-auto mb-3">
+            <i class="bi bi-map-fill text-info fs-2"></i>
+          </div>
+          <h3 class="fw-bold mb-1">Route</h3>
+          <p class="fw-semibold text-dark mb-1">Track Route</p>
+          <p class="text-muted small mb-3">Optimize your delivery route with GPS integration.</p>
+
+          {% if latest_delivery %}
+            <a href="{% url 'track_route' latest_delivery.id %}" class="btn btn-outline-info btn-sm w-100">
+              <i class="bi bi-arrow-right me-1"></i>Start Navigation
+            </a>
+          {% else %}
+            <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+              <i class="bi bi-exclamation-circle me-1"></i>No Active Delivery
+            </button>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+
+ 
+<!-- Completion Details Modal -->
+<div class="modal fade" id="completionModal" tabindex="-1" aria-labelledby="completionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white rounded-top-4">
+        <h5 class="modal-title fw-bold mb-0" id="completionModalLabel">
+          <i class="bi bi-check-lg me-2"></i>Today's Completed Deliveries
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <p class="text-muted mb-3">List of deliveries successfully completed today.</p>
+
+        <ul class="list-group">
+          {% if deliveries %}
+            {% for delivery in deliveries %}
+              <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                  <span class="fw-semibold text-dark">Order #{{ delivery.order.id }}</span> 
+                  <small class="text-muted">by {{ delivery.order.patient.username }}</small><br>
+                  <small class="text-muted">
+                    Delivered by: 
+                    {% if delivery.assigned_to %}
+                      <span class="text-success">{{ delivery.assigned_to.username }}</span>
+                    {% else %}
+                      <span class="text-secondary">Unassigned</span>
+                    {% endif %}
+                  </small>
+                </div>
+                <div>
+                  <span class="badge bg-success px-3 py-2 rounded-pill">
+                    Delivered at {{ delivery.delivered_at|date:"H:i A" }}
+                  </span>
+                </div>
+              </li>
+            {% endfor %}
+          {% else %}
+            <li class="list-group-item text-muted text-center py-3">
+              <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+              No deliveries completed today.
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-4">
+        <small class="text-muted me-auto">
+          Showing {{ deliveries|length }} delivery{{ deliveries|length|pluralize }} completed today.
+        </small>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Performance Modal -->
+<div class="modal fade" id="performanceModal" tabindex="-1" aria-labelledby="performanceModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header bg-info text-white rounded-top-4">
+        <h5 class="modal-title fw-bold mb-0" id="performanceModalLabel">
+          <i class="bi bi-graph-up me-2"></i>Performance Metrics
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <i class="bi bi-trophy fs-1 text-info mb-3 d-block"></i>
+        <h4 class="fw-bold">{{ on_time_rate|default:0 }}% On-Time</h4>
+        <p class="text-muted">Excellent performance this week!</p>
+      </div>
+      <div class="modal-footer bg-light rounded-bottom-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<style>
+  .card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+  }
+  .bg-primary.bg-opacity-10 {
+    color: #0d6efd;
+  }
+</style>
+
+<script>
+  // Optional: Add some interactivity, like updating stats via AJAX
+  document.addEventListener('DOMContentLoaded', function() {
+    // Placeholder for dynamic content loading
+    console.log('Delivery Dashboard Loaded');
+  });
+</script>
+{% endblock %}

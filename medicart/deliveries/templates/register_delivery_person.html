@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Register Delivery Staff{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+          <!-- Teal Gradient Header -->
+          <div class="text-white text-center py-5 px-4"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+            <i class="bi bi-capsule-pill fs-1 mb-3 d-block opacity-100"></i>
+            <h2 class="fw-bold mb-2 text-white">Create Delivery Staff Account</h2>
+            <p class="mb-0 opacity-90">Create a new delivery staff account to manage deliveries efficiently.</p>
+          </div>
+    <div class="card-body p-4 p-md-5">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-control" name="username" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="email" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" name="password" required>
+        </div>
+
+        <div class="d-grid mb-4">
+                <button type="submit"
+                        class="btn btn-primary btn-lg fw-bold rounded-3 shadow-sm py-3">
+                  <i class="bi bi-check-circle me-2"></i> Create Delivery Staff
+                </button>
+              </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

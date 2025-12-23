@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registered Users - Ration Delivery{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  {% for group_name, group_users in grouped_users.items %}
+
+  <div class="card shadow-lg border-0 rounded-4 overflow-hidden mb-5">
+
+    <!-- ================= CARD HEADER ================= -->
+    <div class="card-header bg-light py-3">
+      <h5 class="fw-bold text-primary mb-0">
+        <i class="bi bi-people-fill me-2"></i>
+        {{ group_name }} ({{ group_users|length }})
+      </h5>
+    </div>
+
+    <!-- ================= TABLE ================= -->
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+
+        <thead class="table-primary">
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% for u in group_users %}
+          <tr class="{% if not u.is_active %}table-danger{% endif %}">
+
+            <td class="fw-medium">#{{ forloop.counter }}</td>
+
+            <td>
+              <strong>{{ u.username }}</strong>
+            </td>
+
+            <td>
+              <a href="mailto:{{ u.email }}" class="text-decoration-none">
+                {{ u.email }}
+              </a>
+            </td>
+
+            <td class="text-center">
+              <span class="badge px-3 py-2 {% if u.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                {{ u.is_active|yesno:"Active,Inactive" }}
+              </span>
+            </td>
+
+            <!-- ================= ACTIONS ================= -->
+            <td class="text-center">
+              <div class="btn-group btn-group-sm">
+
+                <!-- Profile -->
+                <a href="{% url 'profile' u.id %}" class="btn btn-outline-info" title="View Profile">
+                  <i class="bi bi-person"></i>
+                </a>
+
+                <!-- View -->
+                <button class="btn btn-outline-primary" title="View Details"
+                        data-bs-toggle="modal"
+                        data-bs-target="#detailsModal{{ u.id }}">
+                  <i class="bi bi-eye"></i>
+                </button>
+
+                <!-- Orders -->
+                {% if u.role == "patient" %}
+                  {% if user.is_staff or user.is_superuser or user == u %}
+                    <a href="{% url 'order_list' %}?user_id={{ u.id }}"
+                      class="btn btn-outline-dark" title="View Orders">
+                      <i class="bi bi-box-seam"></i>
+                    </a>
+                  {% endif %}
+
+                {% elif u.role == "pharmacist" %}
+                  {% if user.is_superuser %}
+                    <a href="{% url 'order_list' %}?pharmacy_id={{ u.id }}"
+                      class="btn btn-outline-dark" title="View Orders">
+                      <i class="bi bi-box-seam"></i>
+                    </a>
+                  {% endif %}
+                {% endif %}
+
+                <!-- Stock -->
+                {% if u.role == "pharmacist" %}
+                  <a href="{% url 'stock_list' %}?pharmacy_id={{ u.id }}"
+                    class="btn btn-outline-success " title="View Stock">
+                    <i class="bi bi-boxes"></i>
+                  </a>
+                {% endif %}
+
+                <!-- Admin -->
+                {% if user.is_staff and u.role != "admin" %}
+                  <a href="{% url 'toggle_user_status' u.id %}"
+                    class="btn {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                    {{ u.is_active|yesno:"Deactivate,Activate" }}
+                  </a>
+                {% endif %}
+
+              </div>
+            </td>
+          </tr>
+
+          <!-- ================= DETAILS MODAL ================= -->
+          <div class="modal fade" id="detailsModal{{ u.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-content rounded-4">
+
+                <div class="modal-header">
+                  <h5 class="modal-title">
+                    User Details — {{ u.username }}
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body row g-3">
+                  <div class="col-md-6"><strong>First Name:</strong> {{ u.first_name|default:"-" }}</div>
+                  <div class="col-md-6"><strong>Last Name:</strong> {{ u.last_name|default:"-" }}</div>
+                  <div class="col-md-6"><strong>Username:</strong> {{ u.username|default:"-" }}</div>
+                  <div class="col-md-6"><strong>Email:</strong> {{ u.email|default:"-" }}</div>
+                  <div class="col-md-6"><strong>Phone:</strong> {{ u.phone|default:"-" }}</div>
+                  <div class="col-md-6"><strong>Pharmacy Name:</strong> {{ u.pharmacy_name|default:"-" }}</div>
+                  <div class="col-md-6"><strong>Joined:</strong> {{ u.date_joined|date:"M d, Y" }}</div>
+                  <div class="col-md-6"><strong>Address:</strong> {{ u.address|default:"-" }}</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center py-5 text-muted">
+              No {{ group_name }} found.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+  {% endfor %}
+</div>
+
+<style>
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+.btn-group .btn {
+  border-radius: 0.375rem;
+}
+.badge {
+  font-size: 0.85rem;
+}
+</style>
+{% endblock %}

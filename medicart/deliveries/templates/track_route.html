@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Track Route - Delivery {{ delivery.id }}{% endblock %}
+
+{% block content %}
+<div class="container px-4 py-4">
+  <h2 class="mb-3 text-primary">
+    <i class="bi bi-geo-alt me-2"></i> Tracking Delivery #{{ delivery.id }}
+  </h2>
+  <p class="text-muted">Live tracking between the pharmacy and the customer.</p>
+
+  <!-- HORIZONTAL TIMELINE -->
+  <div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-body text-center">
+      <h5 class="fw-semibold mb-3">
+        <i class="bi bi-clock-history me-2 text-primary"></i>Order Status Timeline
+      </h5>
+
+      <div class="timeline-horizontal d-flex justify-content-between align-items-center position-relative">
+        {% for status, label in delivery.order.STATUS_CHOICES %}
+          <div class="timeline-item text-center flex-fill position-relative">
+            <div class="timeline-dot
+              {% if delivery.order.status == status %} active
+              {% elif delivery.order.status == 'delivered' or
+                      (delivery.order.status == 'out_for_delivery' and status in 'pending,confirmed,processing') or
+                      (delivery.order.status == 'processing' and status in 'pending,confirmed') or
+                      (delivery.order.status == 'confirmed' and status == 'pending') %} completed
+              {% endif %}">
+              
+              {% if delivery.order.status == status %}
+                <i class="bi bi-circle-fill text-primary fs-4"></i>
+              {% elif delivery.order.status == 'delivered' and status == 'delivered' %}
+                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+              {% elif delivery.order.status != status and status in 'pending,confirmed,processing,out_for_delivery,delivered' %}
+                <i class="bi bi-circle-fill text-secondary fs-4"></i>
+              {% endif %}
+            </div>
+            <p class="small mt-2 fw-semibold
+              {% if delivery.order.status == status %}text-primary
+              {% elif status == 'delivered' %}text-success{% endif %}">
+              {{ label }}
+            </p>
+          </div>
+        {% endfor %}
+        <div class="timeline-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP SECTION -->
+  <div class="card shadow-sm border-0 rounded-4 mt-4">
+    <div class="card-body text-center">
+      <div class="map-container mx-auto" style="max-width: 900px;">
+        <div id="map" class="shadow-sm"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- TIMELINE & MAP STYLES -->
+<style>
+/* --- TIMELINE --- */
+.timeline-horizontal {
+  position: relative;
+  padding: 20px 10px;
+}
+.timeline-line {
+  position: absolute;
+  top: 32px;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background-color: #dee2e6;
+  z-index: 1;
+}
+.timeline-item {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+}
+.timeline-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 3px solid #6c757d;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: auto;
+}
+.timeline-dot.active {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+.timeline-dot.completed {
+  background-color: #198754;
+  border-color: #198754;
+  color: white;
+}
+
+/* --- MAP FIX --- */
+.map-container {
+  width: 100%;
+  height: 350px;
+  position: relative;
+}
+#map {
+  height: 100%;
+  width: 100%;
+  border-radius: 12px;
+  z-index: 0;
+}
+</style>
+
+<!-- MAP SCRIPT -->
+<script>
+const pharmacy = {{ pickup|safe }};
+const customer = {{ drop|safe }};
+
+// Initialize map
+const map = L.map('map').setView(pharmacy, 12);
+
+// Add OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+// Add markers
+const startMarker = L.marker(pharmacy).addTo(map).bindPopup('Pharmacy').openPopup();
+const endMarker = L.marker(customer).addTo(map).bindPopup('Customer');
+
+// Draw route
+const routeLine = L.polyline([pharmacy, customer], { color: 'blue', weight: 4, opacity: 0.8 }).addTo(map);
+map.fitBounds(routeLine.getBounds());
+
+// Moving marker setup
+const movingMarker = L.marker(pharmacy, {
+  icon: L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+    iconSize: [25, 25],
+    iconAnchor: [12, 12],
+  })
+}).addTo(map);
+
+// Handle map rendering after load (prevents overlap)
+setTimeout(() => {
+  map.invalidateSize();
+  map.fitBounds(routeLine.getBounds());
+}, 400);
+
+// Animate moving marker
+const steps = 200;
+let step = 0;
+const deltaLat = (customer[0] - pharmacy[0]) / steps;
+const deltaLng = (customer[1] - pharmacy[1]) / steps;
+
+function moveMarker() {
+  step++;
+  const newLat = pharmacy[0] + deltaLat * step;
+  const newLng = pharmacy[1] + deltaLng * step;
+  movingMarker.setLatLng([newLat, newLng]);
+
+  if (step < steps) {
+    requestAnimationFrame(moveMarker);
+  } else {
+    movingMarker.bindPopup('Delivered ✅').openPopup();
+  }
+}
+
+moveMarker();
+</script>
+{% endblock %}

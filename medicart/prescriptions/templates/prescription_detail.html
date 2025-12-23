@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Prescription Details - #{{ prescription.id }} - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white p-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <i class="bi bi-file-earmark-medical fs-3 me-2 text-white-50"></i>
+              <h2 class="fw-bold mb-0">Prescription Details</h2>
+              <p class="mb-0 opacity-75 small">Prescription #{{ prescription.id }}</p>
+            </div>
+            <a href="{% url 'prescription_list' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+              <i class="bi bi-arrow-left me-1"></i>Back to Prescriptions
+            </a>
+          </div>
+        </div>
+        <div class="card-body p-4 p-md-5">
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-person-heart text-primary fs-4 me-3"></i>
+                <h6 class="fw-semibold mb-1">Patient</h6>
+              </div>
+              <p class="text-muted mb-0 fw-medium">{{ prescription.patient.username }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-upload text-primary fs-4 me-3"></i>
+                <h6 class="fw-semibold mb-1">Uploaded At</h6>
+              </div>
+              <p class="text-muted mb-0">{{ prescription.uploaded_at|date:"M d, Y H:i" }}</p>
+            </div>
+
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-shield-check text-primary fs-4 me-3"></i>
+                <h6 class="fw-semibold mb-1">Verified</h6>
+              </div>
+              <span class="badge fs-6 px-3 py-2 rounded-pill 
+                {% if prescription.verified %}bg-success text-white
+                {% else %}bg-warning text-dark{% endif %}">
+                {% if prescription.verified %}Yes{% else %}No{% endif %}
+              </span>
+            </div>
+
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-person-check-fill text-primary fs-4 me-3"></i>
+                <h6 class="fw-semibold mb-1">Verified By</h6>
+              </div>
+              <p class="text-muted mb-0 fw-medium">
+                {% if prescription.verified_by %}
+                  {{ prescription.verified_by.username }}
+                {% else %}
+                  <span class="text-muted">Not verified yet</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <h5 class="fw-bold mb-3">
+            <i class="bi bi-file-text me-2 text-primary"></i>OCR Extracted Notes
+          </h5>
+          <div class="bg-light rounded-3 p-3">
+            <pre class="mb-0 text-wrap small" style="white-space: pre-wrap; background: none; border: none;">{{ prescription.notes|default:"No notes extracted." }}</pre>
+          </div>
+
+          <div class="d-flex justify-content-center mt-4">
+            <a href="{% url 'prescription_list' %}" class="btn btn-secondary rounded-3 px-4">
+              <i class="bi bi-list-ul me-2"></i>Back to Prescription List
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+  }
+  pre {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+</style>
+{% endblock %}

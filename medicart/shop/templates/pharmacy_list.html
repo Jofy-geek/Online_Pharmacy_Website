@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Pharmacies - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h1 class="fw-bold mb-1 text-primary">
+            <i class="bi bi-buildings me-2"></i>Pharmacies Management
+          </h1>
+          <p class="text-muted mb-0 fs-6">View and manage pharmacy locations and details</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          {% if user.role == "pharmacist" %}
+            <a href="{% url 'pharmacy_create' %}" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-1"></i>Add New Pharmacy
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-light border-0 py-3">
+      <h5 class="mb-0 fw-semibold">
+        <i class="bi bi-list-ul me-2 text-primary"></i>Pharmacy List
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Pharmacy</th>
+              <th scope="col">Staff Name</th>
+              <th scope="col">Username</th>
+              <th scope="col">Address</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Approved</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ph in pharmacies %}
+              <tr class="border-bottom">
+                <td>{{ ph.pharmacy_name }}</td>
+                <td>{{ ph.first_name }} {{ ph.last_name }}</td>
+                <td>{{ ph.username }}</td>
+                <td>{{ ph.address|truncatewords:4|default:"—" }}</td>
+                <td>{{ ph.phone|default:"—" }}</td>
+                <td>
+                  <span class="badge fs-6 px-3 py-2 rounded-pill 
+                    {% if ph.approved %}bg-success text-white{% else %}bg-warning text-dark{% endif %}">
+                    {% if ph.approved %}Yes{% else %}No{% endif %}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="{% url 'pharmacy_detail' ph.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                      <i class="bi bi-eye me-1"></i>View
+                    </a>
+                    
+                    {% if user.is_superuser %}
+                   
+
+                      <form method="POST" action="{% url 'pharmacy_delete' ph.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Are you sure you want to delete this pharmacy?');">
+                          <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                      </form>
+
+                      {% if not ph.approved %}
+                        <a href="{% url 'pharmacy_approve_toggle' ph.id %}?action=approve" class="btn btn-success btn-sm rounded-pill px-3">
+                          <i class="bi bi-check-circle me-1"></i>Approve
+                        </a>
+                        <a href="{% url 'pharmacy_approve_toggle' ph.id %}?action=reject" class="btn btn-danger btn-sm rounded-pill px-3">
+                          <i class="bi bi-x-circle me-1"></i>Reject
+                        </a>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="bi bi-building fs-1 mb-3 d-block"></i>
+                  <p class="mb-0">No pharmacies found.</p>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% if pharmacies %}
+      <div class="card-footer bg-light border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <small class="text-muted">
+            Showing {{ pharmacies|length }} pharmacy{{ pharmacies|length|pluralize }}.
+          </small>
+          <nav aria-label="Pharmacy pagination">
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">Previous</a>
+              </li>
+              <li class="page-item active">
+                <a class="page-link" href="#">1</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+  }
+</style>
+{% endblock %}

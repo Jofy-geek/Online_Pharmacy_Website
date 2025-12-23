@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Delivery Details - Order {{ delivery.order.id }} - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-11 col-lg-10">
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+        <!-- ================= HEADER ================= -->
+        <div class="card-header bg-primary text-white p-4">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <i class="bi bi-truck fs-3 me-2 text-white-50"></i>
+              <h2 class="fw-bold mb-0">Delivery Details</h2>
+              <p class="mb-0 opacity-75 small">Order #{{ delivery.order.id }}</p>
+            </div>
+            <a href="{% url 'delivery_list' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+              <i class="bi bi-arrow-left me-1"></i>Back to Deliveries
+            </a>
+          </div>
+        </div>
+
+        <!-- ================= BODY ================= -->
+        <div class="card-body p-4 p-md-5">
+
+          <!-- ================= ORDER SUMMARY ================= -->
+          <h5 class="fw-bold mb-3 text-primary">Order Summary</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6"><strong>Customer:</strong> {{ customer.username }}</div>
+            <div class="col-md-6"><strong>Mobile:</strong> {{ customer.phone }}</div>
+            <div class="col-md-6"><strong>Total Amount:</strong> ₹{{ delivery.order.total_amount }}</div>
+            <div class="col-md-6">
+              <strong>Payment:</strong>
+              {{ delivery.order.payment_method }} ({{ delivery.order.payment_status }})
+            </div>
+            <div class="col-md-6">
+              <strong>Status:</strong> {{ delivery.order.status|title }}
+            </div>
+            <div class="col-md-6">
+              <strong>Order Date:</strong>
+              {{ delivery.order.created_at|date:"d M Y H:i" }}
+            </div>
+          </div>
+
+          <!-- ================= PRODUCT LIST ================= -->
+          <h5 class="fw-bold mb-3 text-primary">Products in Order</h5>
+          <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Medicine</th>
+                  <th>Pharmacy</th>
+                  <th class="text-center">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                <tr>
+                  <td>{{ item.medicine.name }}</td>
+                  <td>{{ item.medicine.pharmacy.pharmacy_name }}</td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted">
+                    No items found
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ================= ROUTE INFO ================= -->
+          <h5 class="fw-bold mb-3 text-primary">Delivery Route</h5>
+          <div class="row g-3 mb-4">
+
+            <!-- PICKUP -->
+            <div class="col-md-6">
+              <div class="border rounded-3 p-3 h-100 bg-light">
+                <h6 class="fw-bold text-success">Pickup Location (Pharmacy)</h6>
+
+                {% if pickup_shop %}
+                  <p class="mb-1"><strong>Pharmacy:</strong> {{ pickup_shop.pharmacy_name }}</p>
+                  <p class="mb-1"><strong>Pharmacist:</strong> {{ pickup_shop.username }}</p>
+                  <p class="mb-1"><strong>Mobile:</strong> {{ pickup_shop.phone }}</p>
+                  <p class="mb-0"><strong>Address:</strong> {{ pickup_shop.address }}</p>
+                {% else %}
+                  <p class="text-muted mb-0">Pickup location not detected</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- DROP -->
+            <div class="col-md-6">
+              <div class="border rounded-3 p-3 h-100 bg-light">
+                <h6 class="fw-bold text-danger">Drop Location (Customer)</h6>
+                <p class="mb-1"><strong>Customer:</strong> {{ customer.username }}</p>
+                <p class="mb-1"><strong>Mobile:</strong> {{ customer.phone }}</p>
+
+                {% if delivery.order.delivery_address %}
+                  <p class="mb-0">
+                    <strong>Delivery Address:</strong>
+                    {{ delivery.order.delivery_address }}
+                  </p>
+                {% else %}
+                  <p class="text-muted mb-0">No address provided</p>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ================= DELIVERY STATUS ================= -->
+          <h5 class="fw-bold mb-3 text-primary">Delivery Status</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <strong>Assigned To:</strong><br>
+              {% if delivery.assigned_to %}
+                {{ delivery.assigned_to.username }} ({{ delivery.assigned_to.phone }})
+              {% else %}
+                <span class="text-warning">Not Assigned</span>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <strong>Status:</strong><br>
+              <span class="badge bg-secondary">
+                {{ delivery.status|title }}
+              </span>
+            </div>
+
+            <div class="col-md-6">
+              <strong>Picked At:</strong><br>
+              {% if delivery.picked_at %}
+                {{ delivery.picked_at|date:"d M Y H:i" }}
+              {% else %}
+                <span class="text-muted">Not picked yet</span>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <strong>Delivered At:</strong><br>
+              {% if delivery.delivered_at %}
+                {{ delivery.delivered_at|date:"d M Y H:i" }}
+              {% else %}
+                <span class="text-muted">Not delivered yet</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="text-center">
+            <a href="{% url 'delivery_list' %}" class="btn btn-secondary rounded-3 px-4">
+              <i class="bi bi-list-ul me-2"></i>Back to Delivery List
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+</style>
+{% endblock %}

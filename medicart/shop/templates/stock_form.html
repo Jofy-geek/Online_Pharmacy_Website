@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}{% if stock %}Edit{% else %}Add New{% endif %} Stock — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5"
+     style="background: linear-gradient(135deg, #f5fffd 0%, #e8f7f5 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Add/Edit Stock Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+          <!-- Teal Gradient Header -->
+          <div class="text-white text-center py-5 px-4"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+            <i class="bi bi-box-seam-fill fs-1 mb-3 d-block opacity-100"></i>
+            <h2 class="fw-bold mb-2 text-white">
+              {% if stock %}Edit Stock Entry{% else %}Add New Stock{% endif %}
+            </h2>
+            <p class="mb-0 opacity-100">
+              {% if stock %}
+                {{ stock.medicine.name }} • {{ stock.pharmacy.pharmacy_name|default:stock.pharmacy.username }}
+              {% else %}
+                Manage inventory for your pharmacy
+              {% endif %}
+            </p>
+          </div>
+
+          <div class="card-body p-5">
+
+            <!-- Current Medicine Preview (when editing) -->
+            {% if stock and stock.medicine.image %}
+            <div class="text-center mb-5">
+              <img src="{{ stock.medicine.image.url }}" 
+                   alt="{{ stock.medicine.name }}"
+                   class="img-fluid rounded-4 shadow-lg"
+                   style="max-width: 160px; height: 160px; object-fit: cover; border: 5px solid rgba(43,138,126,0.15);">
+              <p class="text-muted small mt-3">Currently editing stock for this medicine</p>
+            </div>
+            {% endif %}
+
+            <form method="POST" novalidate>
+              {% csrf_token %}
+
+              <!-- Medicine Selection -->
+              <div class="mb-5">
+                <label class="form-label fw-semibold d-flex align-items-center gap-2 text-primary">
+                  <i class="bi bi-capsule-fill fs-4"></i>
+                  Select Medicine
+                </label>
+                <div class="position-relative">
+                  {{ form.medicine|add_class:"form-select form-select-lg rounded-3 shadow-sm"|attr:"style:padding-right: 50px;" }}
+                  <div class="position-absolute top-50 end-0 translate-middle-y pe-3">
+                    <i class="bi bi-search text-muted"></i>
+                  </div>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Search and select a medicine from your pharmacy inventory
+                </small>
+                {% for error in form.medicine.errors %}
+                  <small class="text-danger d-block mt-1">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}
+                  </small>
+                {% endfor %}
+              </div>
+
+              <!-- Quantity & Low Stock Threshold -->
+              <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-box-fill text-success"></i>
+                    Available Quantity
+                  </label>
+                  {{ form.quantity|add_class:"form-control form-control-lg rounded-3 shadow-sm text-center fs-4 fw-bold"|attr:"placeholder:50"|attr:"min:0" }}
+                  <div class="form-text">
+                    Current units in stock
+                  </div>
+                  {% for error in form.quantity.errors %}
+                    <small class="text-danger d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                    Low Stock Alert At
+                  </label>
+                  {{ form.low_stock_threshold|add_class:"form-control form-control-lg rounded-3 shadow-sm text-center"|attr:"placeholder:10"|attr:"min:1" }}
+                  <div class="form-text">
+                    Get notified when stock falls to this level
+                  </div>
+                  {% for error in form.low_stock_threshold.errors %}
+                    <small class="text-danger d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Visual Stock Indicator -->
+              <div class="alert alert-info border-0 rounded-4 p-4 mb-5 text-center">
+                <i class="bi bi-info-circle-fill fs-3 text-primary mb-3 d-block"></i>
+                <p class="mb-2 fw-bold">Stock Status Preview</p>
+                <div id="stock-preview" class="fs-5 fw-bold text-primary">
+                  Enter quantity to see live status
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex flex-column flex-md-row gap-3 justify-content-between">
+                <a href="{% url 'stock_list' %}"
+                   class="btn btn-outline-secondary btn-lg rounded-3 px-5 d-flex align-items-center justify-content-center gap-2 order-md-1">
+                  <i class="bi bi-arrow-left-circle"></i>
+                  Cancel & Back
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary btn-lg rounded-3 px-5 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm order-md-2">
+                  <i class="bi bi-check-circle-fill"></i>
+                  {% if stock %}Update Stock{% else %}Add to Inventory{% endif %}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Trust Badge -->
+        <div class="text-center mt-4 text-muted small">
+          <i class="bi bi-shield-check-fill text-success me-1"></i>
+          Real-time inventory • Only you can manage your pharmacy stock
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Stock Status Preview Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const quantityInput = document.querySelector("#{{ form.quantity.id_for_label }}");
+  const thresholdInput = document.querySelector("#{{ form.low_stock_threshold.id_for_label }}");
+  const preview = document.getElementById("stock-preview");
+
+  function updatePreview() {
+    const qty = parseInt(quantityInput.value) || 0;
+    const threshold = parseInt(thresholdInput.value) || 10;
+
+    if (qty === 0) {
+      preview.innerHTML = `<span class="text-danger">Out of Stock</span>`;
+    } else if (qty <= threshold) {
+      preview.innerHTML = `<span class="text-warning">Low Stock Alert</span>`;
+    } else {
+      preview.innerHTML = `<span class="text-success">In Stock</span>`;
+    }
+  }
+
+  quantityInput.addEventListener("input", updatePreview);
+  thresholdInput.addEventListener("input", updatePreview);
+  updatePreview(); // Initial check
+});
+</script>
+
+<style>
+  .form-control:focus, .form-select:focus {
+    border-color: var(--pharma-teal) !important;
+    box-shadow: 0 0 0 0.25rem rgba(43, 138, 126, 0.15) !important;
+  }
+
+  .btn-primary:hover, .btn-outline-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(43, 138, 126, 0.3) !important;
+  }
+
+  .alert-info {
+    background: linear-gradient(135deg, rgba(43,138,126,0.08), rgba(43,138,126,0.04));
+    border: 1px dashed rgba(43,138,126,0.3);
+  }
+</style>
+{% endblock %}

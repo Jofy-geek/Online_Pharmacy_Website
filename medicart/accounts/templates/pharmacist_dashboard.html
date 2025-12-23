@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <!-- Welcome Hero Section -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h1 class="fw-bold mb-1 text-primary">
+            <i class="bi bi-person-badge-fill me-2"></i>Welcome back, {{ user.username }}
+          </h1>
+          <p class="text-muted mb-0 fs-6">Pharmacist | Manage medicines, verify prescriptions, and process orders efficiently.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats Row -->
+  <div class="row mb-5 g-4">
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3">
+        <div class="card-body text-center p-4">
+          <i class="bi bi-capsule text-info fs-1 mb-3 d-block"></i>
+          <h3 class="fw-bold mb-1">{{ all_medicines|default:0 }}</h3>
+          <p class="text-muted mb-0">All Medicines</p>
+          <a href="{% url 'medicine_list' %}" class="btn btn-outline-info btn-sm mt-2">View All</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3">
+        <div class="card-body text-center p-4">
+          <i class="bi bi-cart-check-fill text-primary fs-1 mb-3 d-block"></i>
+          <h3 class="fw-bold mb-1">{{ pending_orders|default:0 }}</h3>
+          <p class="text-muted mb-0">Pending Orders</p>
+          <a href="{% url 'order_list' %}" class="btn btn-outline-primary btn-sm mt-2">View All</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3">
+        <div class="card-body text-center p-4">
+          <i class="bi bi-file-medical-fill text-warning fs-1 mb-3 d-block"></i>
+          <h3 class="fw-bold mb-1">{{ pending_prescriptions|default:0 }}</h3>
+          <p class="text-muted mb-0">Pending Prescriptions</p>
+          <a href="{% url 'prescription_list' %}" class="btn btn-outline-warning btn-sm mt-2">Verify</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3">
+        <div class="card-body text-center p-4">
+          <i class="bi bi-box-seam-fill text-danger fs-1 mb-3 d-block"></i>
+          <h3 class="fw-bold mb-1">{{ low_stock_items|default:0 }}</h3>
+          <p class="text-muted mb-0">Low Stock Alerts</p>
+          <a href="{% url 'stock_list' %}" class="btn btn-outline-info btn-sm mt-2">Check Stock</a>
+        </div>
+      </div>
+    </div>
+        <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 h-100 rounded-3 overflow-hidden">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+              <i class="bi bi-truck text-primary fs-4"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Delivery Management</h5>
+          </div>
+          <p class="text-muted small mb-3">Assign orders to delivery staff and track progress.</p>
+          <a href="{% url 'delivery_list' %}" class="btn btn-primary w-100">
+            <i class="bi bi-arrow-right me-2"></i>Manage Deliveries
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+<style>
+  .card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+  }
+  .bg-primary.bg-opacity-10 {
+    color: #0d6efd;
+  }
+</style>
+
+<script>
+  // Optional: Add some interactivity, like updating stats via AJAX
+  document.addEventListener('DOMContentLoaded', function() {
+    // Placeholder for dynamic content loading
+    console.log('Pharmacist Dashboard Loaded');
+  });
+</script>
+{% endblock %}

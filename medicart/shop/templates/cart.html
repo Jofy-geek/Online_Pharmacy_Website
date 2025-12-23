@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Your Cart — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 py-5" style="background: #f8fffe;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-xl-10">
+
+        <!-- Page Title -->
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold" style="background: linear-gradient(135deg, #362b8a, #564fd1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            <i class="bi bi-cart3 me-3"></i>Your Cart
+          </h1>
+          <p class="text-muted fs-5">Almost there! Review your medicines</p>
+        </div>
+
+        {% if cart.items.all %}
+        <form method="post" action="{% url 'update_cart' %}">
+          {% csrf_token %}
+
+          <!-- Cart Items - Card Style -->
+          <div class="row g-4 mb-5">
+            {% for item in cart.items.all %}
+            <div class="col-12">
+              <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift">
+                <div class="row g-0 align-items-center">
+                  <!-- Image -->
+                  <div class="col-3 col-md-2 p-3 text-center bg-gradient-teal-light">
+                    {% if item.medicine.image %}
+                      <img src="{{ item.medicine.image.url }}" 
+                           alt="{{ item.medicine.name }}"
+                           class="img-fluid rounded-3 shadow-sm"
+                           style="max-height: 110px; object-fit: cover;">
+                    {% else %}
+                      <div class="bg-white rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="height: 110px;">
+                        <i class="bi bi-capsule fs-1 text-teal"></i>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Details -->
+                  <div class="col-9 col-md-10">
+                    <div class="card-body py-4 px-4">
+                      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                        <div class="flex-grow-1">
+                          <h5 class="fw-bold text-dark mb-1">{{ item.medicine.name }}</h5>
+                          <p class="text-muted mb-2">
+                            <small>{{ item.medicine.brand|default:"Generic Medicine" }}</small>
+                            {% if item.medicine.prescription_required %}
+                              <span class="badge bg-danger rounded-pill ms-2 small">Rx Required</span>
+                            {% endif %}
+                          </p>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-4">
+                          <!-- Quantity -->
+                          <div class="text-center">
+                            <small class="text-muted d-block mb-1">Quantity</small>
+                            <input type="number"
+                                   name="quantity_{{ item.id }}"
+                                   value="{{ item.quantity }}"
+                                   min="1"
+                                   max="20"
+                                   class="form-control form-control-sm rounded-pill text-center fw-bold quantity-input"
+                                   style="width: 80px;"
+                                   data-price="{{ item.medicine.price }}">
+                          </div>
+
+                          <!-- Price -->
+                          <div class="text-center">
+                            <small class="text-muted d-block mb-1">Price</small>
+                            <div class="fw-bold text-success">₹{{ item.medicine.price|floatformat:2 }}</div>
+                          </div>
+
+                          <!-- Subtotal -->
+                          <div class="text-center">
+                            <small class="text-muted d-block mb-1">Subtotal</small>
+                            <div class="fw-bold text-primary fs-4 subtotal">₹{{ item.subtotal|floatformat:2 }}</div>
+                          </div>
+
+                          <!-- Remove -->
+                          <div>
+                            <a href="{% url 'remove_cart_item' item.id %}"
+                               class="btn btn-outline-danger btn-sm rounded-circle p-2"
+                               title="Remove"
+                               onclick="return confirm('Remove this medicine?')">
+                              <i class="bi bi-trash"></i>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Total & Actions -->
+          <div class="card border-0 shadow-lg rounded-4 overflow-hidden sticky-bottom bg-white">
+            <div class="card-body p-5">
+              <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                  <h2 class="fw-bold text-dark mb-2">
+                    Grand Total: 
+                    <span class="text-success">₹<span id="cart-total">{{ cart.total_price|floatformat:2 }}</span></span>
+                  </h2>
+                  <p class="text-success fs-5 mb-0">
+                    <i class="bi bi-check2-all me-2"></i>
+                    Free delivery on all orders
+                  </p>
+                </div>
+                <div class="col-md-6 mt-4 mt-md-0 d-flex flex-column flex-md-row 
+                            justify-content-md-end align-items-center gap-3">
+
+                    <a href="{% url 'upload_prescription' %}"
+                      class="btn btn-warning btn-lg rounded-pill px-5 shadow-sm 
+                              d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-upload"></i>
+                        Upload Prescription
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-outline-primary btn-lg rounded-pill px-5 shadow-sm 
+                                  d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Update Cart
+                    </button>
+
+                    <a href="{% url 'checkout' %}"
+                      class="btn btn-success btn-lg rounded-pill px-5 shadow-lg 
+                              d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-lock-fill"></i>
+                        Secure Checkout
+                    </a>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </form>
+
+        {% else %}
+        <!-- Empty Cart - Beautiful -->
+        <div class="text-center py-5 my-5">
+          <div class="mb-5">
+            <i class="bi bi-cart-x display-1 text-teal opacity-20"></i>
+          </div>
+          <h2 class="text-muted fw-bold mb-3">Your cart is empty</h2>
+          <p class="text-muted fs-5 mb-4">Start adding medicines to place your order</p>
+          <a href="{% url 'medicine_list' %}" 
+             class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg">
+            <i class="bi bi-plus-circle-fill me-2"></i>Browse Medicines
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Trust Line -->
+        <div class="text-center mt-5">
+          <p class="text-muted small">
+            <i class="bi bi-shield-check text-success me-1"></i>
+            100% Genuine • Verified Pharmacies • Encrypted Payments
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Update Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const updateTotal = () => {
+    let total = 0;
+    document.querySelectorAll(".quantity-input").forEach(input => {
+      const price = parseFloat(input.dataset.price);
+      const qty = parseInt(input.value) || 1;
+      const subtotal = price * qty;
+      input.closest("tr")?.querySelector(".subtotal")?.parentElement.querySelector(".subtotal")?.textContent = "₹" + subtotal.toFixed(2);
+      total += subtotal;
+    });
+    document.getElementById("cart-total").textContent = total.toFixed(2);
+  };
+
+  document.querySelectorAll(".quantity-input").forEach(el => {
+    el.addEventListener("input", updateTotal);
+  });
+
+  updateTotal();
+});
+</script>
+
+<style>
+
+
+  .bg-gradient-teal-light {
+    background: linear-gradient(135deg, #e0f7f5, #ffffff);
+  }
+
+  .btn-teal {
+    background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-light));
+    border: none;
+    color: white;
+  }
+
+  .btn-teal:hover {
+    background: linear-gradient(135deg, #25776d, #3ab8a8);
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(43,138,126,0.3);
+  }
+
+  .hover-lift {
+    transition: all 0.3s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(43,138,126,0.15) !important;
+  }
+
+  .sticky-bottom {
+    position: sticky;
+    bottom: 20px;
+    z-index: 10;
+  }
+
+  .rounded-pill {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Prescriptions - PharmaCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 px-md-5 py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h1 class="fw-bold mb-1 text-primary">
+            <i class="bi bi-file-earmark-medical me-2"></i>Prescriptions Management
+          </h1>
+          <p class="text-muted mb-0 fs-6">View, verify, and manage patient prescriptions</p>
+        </div>
+        {% comment %} <div class="d-flex align-items-center gap-2">
+          {% if user.role == "patient" %}
+            <a href="{% url 'upload_prescription' %}" class="btn btn-primary">
+              <i class="bi bi-upload me-1"></i>Upload New Prescription
+            </a>
+          {% endif %}
+        </div> {% endcomment %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-light border-0 py-3">
+      <h5 class="mb-0 fw-semibold">
+        <i class="bi bi-list-ul me-2 text-primary"></i>Prescription List
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="fw-semibold text-nowrap">
+                <i class="bi bi-hash me-1 text-primary"></i>ID
+              </th>
+              <th scope="col" class="fw-semibold text-nowrap">
+                <i class="bi bi-person-heart me-1 text-primary"></i>Patient
+              </th>
+              <th scope="col" class="fw-semibold text-nowrap">
+                <i class="bi bi-upload me-1 text-primary"></i>Uploaded At
+              </th>
+              <th scope="col" class="fw-semibold text-nowrap">
+                <i class="bi bi-shield-check me-1 text-primary"></i>Verified
+              </th>
+              <th scope="col" class="fw-semibold text-nowrap">
+                <i class="bi bi-gear me-1 text-primary"></i>Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in prescriptions %}
+              <tr class="border-bottom">
+                <td class="fw-medium">#{{ forloop.counter }}</td>
+                <td>{{ p.patient.username }}</td>
+                <td>{{ p.uploaded_at|date:"M d, Y H:i" }}</td>
+                <td>
+                  <span class="badge fs-6 px-3 py-2 rounded-pill 
+                    {% if p.verified %}bg-success text-white
+                    {% else %}bg-warning text-dark{% endif %}">
+                    {% if p.verified %}Yes{% else %}No{% endif %}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="{% url 'prescription_detail' p.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                      <i class="bi bi-eye me-1"></i>View
+                    </a>
+                    {% if user.role == "admin" or user.role == "pharmacist" %}
+                      {% if not p.verified %}
+                        <a href="{% url 'verify_prescription' p.id %}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                          <i class="bi bi-check-circle me-1"></i>Verify
+                        </a>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                  <p class="mb-0">No prescriptions found.</p>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% if prescriptions %}
+      <div class="card-footer bg-light border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <small class="text-muted">
+            Showing {{ prescriptions|length }} prescription{{ prescriptions|length|pluralize }}.
+          </small>
+          <nav aria-label="Prescription pagination">
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">Previous</a>
+              </li>
+              <li class="page-item active">
+                <a class="page-link" href="#">1</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+
+<style>
+  .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+  }
+</style>
+{% endblock %}

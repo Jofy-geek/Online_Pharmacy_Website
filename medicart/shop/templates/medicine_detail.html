@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Medicine Details — {{ medicine.name }} —  PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 py-5" style="background: linear-gradient(135deg, #f5fffd 0%, #e8f7f5 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Medicine Details Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+          <!-- Hero Header with Medicine Image -->
+          <div class="text-white text-center py-5 px-4 position-relative overflow-hidden"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+
+            <!-- Medicine Image – Top Center -->
+            <div class="mb-4 d-inline-block">
+              {% if medicine.image and medicine.image.url %}
+                <img src="{{ medicine.image.url }}" 
+                     alt="{{ medicine.name }} - Medicine"
+                     class="img-fluid rounded-4 shadow-lg border border-5 border-white border-opacity-50"
+                     style="width: 190px; height: 190px; object-fit: cover;">
+              {% else %}
+                <!-- Elegant fallback when no image -->
+                <div class="bg-white bg-opacity-25 rounded-4 d-flex align-items-center justify-content-center shadow-lg border border-white border-opacity-30"
+                     style="width: 190px; height: 190px; backdrop-filter: blur(12px);">
+                  <div class="text-center">
+                    <i class="bi bi-capsule fs-1 text-white mb-2 d-block"></i>
+                    <small class="text-white opacity-75">No image</small>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Title & Brand -->
+            <h1 class="fw-bold display-6 mb-2 text-white">{{ medicine.name }}</h1>
+            <p class="lead mb-3 opacity-100">{{ medicine.brand|default:"Generic Medicine" }}</p>
+
+            <!-- Category Badge -->
+            <span class="badge bg-white text-primary fs-6 px-4 py-2 rounded-pill shadow-sm">
+              <i class="bi bi-tags-fill me-2"></i>
+              {{ medicine.category.name|default:"General" }}
+            </span>
+          </div>
+
+          <div class="card-body p-5">
+
+            <!-- Product Details Grid -->
+            <div class="row g-5">
+
+              <!-- Left: Pricing & Codes -->
+              <div class="col-md-6">
+                <div class="bg-light rounded-4 p-4 border-start border-primary border-5 shadow-sm">
+                  <h5 class="fw-bold text-primary mb-4">
+                    <i class="bi bi-box-seam me-2"></i>Product Information
+                  </h5>
+
+                  <div class="row g-4">
+                    <div class="col-12">
+                      <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-barcode text-primary fs-4"></i>
+                        <div>
+                          <small class="text-muted text-uppercase fw-semibold">SKU</small>
+                          <p class="mb-0 fw-bold">{{ medicine.sku|default:"—" }}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-currency-rupee text-success fs-4"></i>
+                        <div>
+                          <small class="text-muted text-uppercase fw-semibold">Price</small>
+                          <p class="mb-0 display-6 fw-bold text-success">₹{{ medicine.price|floatformat:2 }}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {% if medicine.expiry_date %}
+                    <div class="col-12">
+                      <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-calendar-x text-warning fs-4"></i>
+                        <div>
+                          <small class="text-muted text-uppercase fw-semibold">Expiry Date</small>
+                          <p class="mb-0 fw-bold {% if medicine.is_expired %}text-danger{% endif %}">
+                            {{ medicine.expiry_date|date:"d M Y" }}
+                            {% if medicine.is_expired %}
+                              <span class="badge bg-danger ms-2 small">Expired</span>
+                            {% endif %}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Description -->
+              <div class="col-md-6">
+                <div class="bg-light rounded-4 p-4 border-start border-success border-5 shadow-sm">
+                  <h5 class="fw-bold text-primary mb-4">
+                    <i class="bi bi-file-medical me-2"></i>Description & Usage
+                  </h5>
+                  <div class="text-muted lh-lg">
+                    {% if medicine.description %}
+                      {{ medicine.description|linebreaks }}
+                    {% else %}
+                      <em>No description provided for this medicine.</em>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-5 border-secondary-subtle">
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+              {% if user.is_authenticated and user.role == "pharmacist" %}
+                <a href="{% url 'medicine_update' medicine.id %}" 
+                   class="btn btn-outline-primary btn-lg rounded-3 px-5 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                  <i class="bi bi-pencil-square"></i> Edit Medicine
+                </a>
+              {% endif %}
+
+              <a href="{% url 'medicine_list' %}"
+                 class="btn btn-outline-secondary btn-lg rounded-3 px-5 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                <i class="bi bi-arrow-left-circle"></i> Back to List
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Trust Line -->
+        <div class="text-center mt-5 text-muted small">
+          <i class="bi bi-shield-check-fill text-success me-1"></i>
+          All medicines are sourced from licensed pharmacies • 100% genuine
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  img:hover {
+    transform: scale(1.05);
+    transition: transform 0.4s ease;
+  }
+  .btn:hover {
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+  }
+</style>
+{% endblock %}

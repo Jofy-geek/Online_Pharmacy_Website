@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Register — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-1"
+     style="background: linear-gradient(135deg, #f5fffd 0%, #e8f7f5 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+
+        <!-- Register Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+          <!-- Teal Gradient Header -->
+          <div class="text-white text-center py-5 px-4"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+            <i class="bi bi-capsule-pill fs-1 mb-3 d-block opacity-100"></i>
+            <h2 class="fw-bold mb-2 text-white">Create Your Account</h2>
+            <p class="mb-0 opacity-90">Join thousands who trust PharmaCare</p>
+          </div>
+
+          <div class="card-body p-4 p-lg-5">
+
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger rounded-3 border-0 mb-4">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ form.non_field_errors|join:" " }}
+              </div>
+            {% endif %}
+
+            <form method="POST" novalidate>
+              {% csrf_token %}
+
+              <!-- First & Last name -->
+              <div class="row g-3 mb-3">
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark">
+                    <i class="bi bi-person me-2 text-primary"></i>
+                    {{ form.first_name.label }}
+                  </label>
+                  {{ form.first_name|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:First name" }}
+                  {% for error in form.first_name.errors %}
+                    <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="col-6">
+                  <label class="form-label fw-semibold text-dark ">
+                    {{ form.last_name.label }}
+                  </label>
+                  {{ form.last_name|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:Last name" }}
+                  {% for error in form.last_name.errors %}
+                    <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Username -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-person-circle me-2 text-primary"></i>
+                  {{ form.username.label }}
+                </label>
+                {{ form.username|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:Choose a username" }}
+                {% for error in form.username.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+
+              <!-- Email -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-envelope me-2 text-primary"></i>
+                  {{ form.email.label }}
+                </label>
+                {{ form.email|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:you@example.com" }}
+                {% for error in form.email.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+
+              <!-- Phone Number -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-telephone me-2 text-primary"></i>
+                  {{ form.phone.label }}
+                </label>
+                {{ form.phone|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:9876543210" }}
+                {% for error in form.phone.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+
+              <!-- Address -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-house-door me-2 text-primary"></i>
+                  {{ form.address.label }}
+                </label>
+                {{ form.address|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:123 Main St, City, Country" }}
+                {% for error in form.address.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+
+              <!-- Role -->
+              {% if form.role %}
+              <div class="mb-4">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-briefcase me-2 text-primary"></i>
+                  {{ form.role.label }}
+                </label>
+                {{ form.role|add_class:"form-select form-select-lg rounded-3 shadow-sm"|attr:"id:role-select" }}
+                {% for error in form.role.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- Pharmacy name (visible for pharmacists only) -->
+              <div class="mb-4" id="pharmacy-container" style="display: none;">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-building me-2 text-primary"></i>
+                  {{ form.pharmacy_name.label }}
+                </label>
+                {{ form.pharmacy_name|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:Pharmacy name (required for pharmacists)" }}
+                {% for error in form.pharmacy_name.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+
+              <!-- Password 1 -->
+              <div class="mb-4 position-relative">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-lock-fill me-2 text-primary"></i>
+                  {{ form.password1.label }}
+                </label>
+                {{ form.password1|add_class:"form-control form-control-lg rounded-3 shadow-sm pe-5"|attr:"placeholder:Create a strong password" }}
+                {% for error in form.password1.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+                <small class="form-text text-muted mt-1">Use at least 8 characters, mix letters & numbers.</small>
+              </div>
+
+              <!-- Password 2 -->
+              <div class="mb-4 position-relative">
+                <label class="form-label fw-semibold text-dark">
+                  <i class="bi bi-lock-fill me-2 text-primary"></i>
+                  {{ form.password2.label }}
+                </label>
+                {{ form.password2|add_class:"form-control form-control-lg rounded-3 shadow-sm pe-5"|attr:"placeholder:Confirm your password" }}
+                {% for error in form.password2.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+
+              <!-- CAPTCHA (if present) -->
+              {% if form.captcha %}
+              <div class="mb-4">
+                {{ form.captcha }}
+                {% for error in form.captcha.errors %}
+                  <small class="text-danger mt-1 d-block"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- Submit Button -->
+              <div class="d-grid mb-4">
+                <button type="submit"
+                        class="btn btn-primary btn-lg fw-bold rounded-3 shadow-sm py-3">
+                  <i class="bi bi-check-circle me-2"></i> Create Account
+                </button>
+              </div>
+            </form>
+
+            <!-- Login Link -->
+            <div class="text-center pt-3 border-top">
+              <p class="text-muted mb-0">
+                Already have an account?
+                <a href="{% url 'login' %}" class="fw-bold text-primary text-decoration-none hover-underline">
+                  Sign in here
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust line -->
+        <div class="text-center mt-4 text-muted small">
+          <i class="bi bi-shield-check text-success me-1"></i>
+          Secure registration • Your data is encrypted and protected
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hover-underline:hover { text-decoration: underline !important; }
+  .toggle-password { cursor: pointer; z-index: 10; }
+  .form-control:focus, .form-select:focus {
+    border-color: var(--pharma-teal);
+    box-shadow: 0 0 0 0.25rem rgba(43, 138, 126, 0.15);
+  }
+</style>
+
+<script>
+  // show/hide pharmacy field based on role select
+  document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.querySelector('select[name="role"]');
+    const pharmacyContainer = document.getElementById('pharmacy-container');
+
+    function updatePharmacyVisibility() {
+      if (!roleSelect) return;
+      pharmacyContainer.style.display = roleSelect.value === 'pharmacist' ? 'block' : 'none';
+    }
+
+    updatePharmacyVisibility();
+    if (roleSelect) roleSelect.addEventListener('change', updatePharmacyVisibility);
+  });
+
+  // Password visibility toggle (works if toggle icons added)
+  document.querySelectorAll('.toggle-password').forEach(item => {
+    item.addEventListener('click', function () {
+      const input = this.previousElementSibling;
+      const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+      input.setAttribute('type', type);
+      this.classList.toggle('bi-eye');
+      this.classList.toggle('bi-eye-slash');
+    });
+  });
+</script>
+{% endblock %}

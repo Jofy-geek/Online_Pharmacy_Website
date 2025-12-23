@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Stock • {{ stock.medicine.name }} — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 py-5" style="background: linear-gradient(135deg, #f5fffd 0%, #e8f7f5 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Stock Details Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+          <!-- Hero Header with Medicine Image & Stock Status -->
+          <div class="text-white text-center py-5 px-4 position-relative overflow-hidden"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+
+            <!-- Medicine Image -->
+            <div class="mb-4 d-inline-block">
+              {% if stock.medicine.image and stock.medicine.image.url %}
+                <img src="{{ stock.medicine.image.url }}" 
+                     alt="{{ stock.medicine.name }}"
+                     class="img-fluid rounded-4 shadow-lg border border-5 border-white border-opacity-40"
+                     style="width: 170px; height: 170px; object-fit: cover;">
+              {% else %}
+                <div class="bg-white bg-opacity-25 rounded-4 d-flex align-items-center justify-content-center shadow-lg"
+                     style="width: 170px; height: 170px; backdrop-filter: blur(10px);">
+                  <i class="bi bi-capsule fs-1 text-white opacity-80"></i>
+                </div>
+              {% endif %}
+            </div>
+
+            <h1 class="fw-bold display-6 mb-2 text-white">{{ stock.medicine.name }}</h1>
+            <p class="lead mb-3 opacity-100">{{ stock.medicine.brand|default:"Generic" }}</p>
+
+            <!-- Stock Status Badge -->
+            {% if stock.quantity > 0 %}
+              {% if stock.quantity <= stock.low_stock_threshold %}
+                <span class="badge bg-warning text-dark fs-5 px-4 py-3 rounded-pill shadow">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>Low Stock
+                </span>
+              {% else %}
+                <span class="badge bg-success fs-5 px-4 py-3 rounded-pill shadow">
+                  <i class="bi-box-fill me-2"></i>In Stock
+                </span>
+              {% endif %}
+            {% else %}
+              <span class="badge bg-danger fs-5 px-4 py-3 rounded-pill shadow">
+                <i class="bi bi-slash-circle-fill me-2"></i>Out of Stock
+              </span>
+            {% endif %}
+          </div>
+
+          <div class="card-body p-5">
+
+            <!-- Key Information Grid -->
+            <div class="row g-5">
+
+              <!-- Left: Stock & Pricing -->
+              <div class="col-md-6">
+                <div class="bg-light rounded-4 p-4 border-start border-primary border-5 shadow-sm">
+                  <h5 class="fw-bold text-primary mb-4">
+                    <i class="bi bi-box-seam-fill me-2"></i>Stock Information
+                  </h5>
+
+                  <div class="row g-4">
+                    <div class="col-12">
+                      <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                          <small class="text-muted text-uppercase fw-semibold">Available Quantity</small>
+                          <h2 class="mb-0 fw-bold text-dark">
+                            {{ stock.quantity }} 
+                            <small class="text-muted fs-5">units</small>
+                          </h2>
+                        </div>
+                        <div class="text-end">
+                          {% if stock.quantity > 20 %}
+                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                          {% elif stock.quantity > 0 %}
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
+                          {% else %}
+                            <i class="bi bi-x-circle-fill text-danger fs-1"></i>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-currency-rupee text-success fs-3"></i>
+                        <div>
+                          <small class="text-muted text-uppercase fw-semibold">Selling Price</small>
+                          <h4 class="mb-0 fw-bold text-success">₹{{ stock.price|floatformat:2 }}</h4>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-calendar-x text-warning fs-3"></i>
+                        <div>
+                          <small class="text-muted text-uppercase fw-semibold">Expiry Date</small>
+                          <p class="mb-0 fw-bold {% if stock.is_expired %}text-danger{% elif stock.is_expiring_soon %}text-warning{% endif %}">
+                            {{ stock.expiry_date|date:"d M Y" }}
+                            {% if stock.is_expired %}
+                              <span class="badge bg-danger ms-2">Expired</span>
+                            {% elif stock.is_expiring_soon %}
+                              <span class="badge bg-warning text-dark ms-2">Expiring Soon</span>
+                            {% else %}
+                              <span class="badge bg-success ms-2">Valid</span>
+                            {% endif %}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Pharmacy & Threshold -->
+              <div class="col-md-6">
+                <div class="bg-light rounded-4 p-4 border-start border-info border-5 shadow-sm">
+                  <h5 class="fw-bold text-primary mb-4">
+                    <i class="bi bi-building-fill me-2"></i>Pharmacy Details
+                  </h5>
+
+                  <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="avatar-circle bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 60px; height: 60px;">
+                      <i class="bi bi-hospital-fill text-primary fs-3"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold fs-5">{{ stock.pharmacy.pharmacy_name|default:stock.pharmacy.username }}</div>
+                      <small class="text-muted>Approved Pharmacy Partner</small>
+                    </div>
+                  </div>
+
+                  <div class="small text-muted lh-lg">
+                    <div><strong>Low Stock Alert At:</strong> {{ stock.low_stock_threshold }} units</div>
+                    <div><strong>Prescription Required:</strong> 
+                      {% if stock.medicine.prescription_required %}
+                        <span class="text-danger">Yes</span>
+                      {% else %}
+                        <span class="text-success">No</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-5 border-secondary-subtle">
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+              {% if user.role == "pharmacist" and user == stock.pharmacy %}
+                <a href="{% url 'stock_update' stock.id %}" 
+                   class="btn btn-outline-primary btn-lg rounded-3 px-5 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-pencil-square"></i>
+                  Update Stock
+                </a>
+              {% endif %}
+
+              <a href="{% url 'stock_list' %}"
+                 class="btn btn-outline-secondary btn-lg rounded-3 px-5 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-arrow-left-circle"></i>
+                Back to Stock List
+              </a>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Trust Footer -->
+        <div class="text-center mt-5 text-muted small">
+          <i class="bi bi-shield-check-fill text-success me-1"></i>
+          Real-time stock • Verified pharmacies only • Secure platform
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .avatar-circle {
+    box-shadow: 0 4px 20px rgba(43,138,126,0.2);
+  }
+
+  .badge {
+    font-weight: 600;
+  }
+
+  img:hover {
+    transform: scale(1.05);
+    transition: transform 0.4s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+  }
+</style>
+{% endblock %}

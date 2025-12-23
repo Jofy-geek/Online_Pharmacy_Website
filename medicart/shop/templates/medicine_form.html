@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}{% if medicine %}Edit{% else %}Add New{% endif %} Medicine — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5"
+     style="background: linear-gradient(135deg, #f5fffd 0%, #e8f7f5 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Add/Edit Medicine Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+          <!-- Teal Gradient Header -->
+          <div class="text-white text-center py-5 px-4"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+            <i class="bi bi-capsule-pill fs-1 mb-3 d-block opacity-100"></i>
+            <h2 class="fw-bold mb-2 text-white">
+              {% if medicine %}Edit Medicine{% else %}Add New Medicine{% endif %}
+            </h2>
+            <p class="mb-0 opacity-100 text-white">
+              {% if medicine %}{{ medicine.name }}{% else %}Enter complete medicine details{% endif %}
+            </p>
+          </div>
+
+          <div class="card-body p-5">
+
+            <!-- Image Preview Section -->
+            {% if medicine and medicine.image %}
+            <div class="text-center mb-5">
+              <div class="d-inline-block position-relative">
+                <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}"
+                     class="img-fluid rounded-4 shadow-lg"
+                     style="width: 180px; height: 180px; object-fit: cover; border: 5px solid rgba(43,138,126,0.2);">
+                <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow">
+                  <i class="bi bi-pencil-fill"></i>
+                </div>
+              </div>
+              <p class="text-muted small mt-3">Current image • Will be replaced on upload</p>
+            </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" novalidate>
+              {% csrf_token %}
+
+              <!-- Name & Brand -->
+              <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-capsule text-primary"></i> Medicine Name
+                  </label>
+                  {{ form.name|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:Paracetamol 500mg" }}
+                  {% if errors %}
+                    <div class="text-danger small mt-1">
+                      {% for err in errors %}
+                        <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-award text-primary"></i> Brand
+                  </label>
+                  {{ form.brand|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:Crocin, Dolo-650" }}
+                  {% if errors %}
+                    <div class="text-danger small mt-1">
+                      {% for err in errors %}
+                        <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Category & Description -->
+              <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-tags-fill text-primary"></i> Category
+                  </label>
+                  {{ form.category|add_class:"form-select form-select-lg rounded-3 shadow-sm" }}
+                  {% if errors %}
+                    <div class="text-danger small mt-1">
+                      {% for err in errors %}
+                        <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-image text-primary"></i> Medicine Image
+                  </label>
+                  {{ form.image|add_class:"form-control form-control-lg rounded-3"|attr:"accept:image/*" }}
+                  <div class="form-text small text-muted">
+                    <i class="bi bi-info-circle"></i> Recommended: 500×500px, JPG/PNG
+                  </div>
+                  {% if errors %}
+                    <div class="text-danger small mt-1">
+                      {% for err in errors %}
+                        <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                  <i class="bi bi-file-text-fill text-primary"></i> Description
+                </label>
+                {{ form.description|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"rows:4"|attr:"placeholder:Indications, dosage, side effects..." }}
+                {% if errors %}
+                  <div class="text-danger small mt-1">
+                    {% for err in errors %}
+                      <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- SKU, Price, Expiry -->
+              <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-barcode text-primary"></i> SKU
+                  </label>
+                  {{ form.sku|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:PARA-500-100" }}
+                  {% if errors %}
+                    <div class="text-danger small mt-1">
+                      {% for err in errors %}
+                        <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-currency-rupee text-success"></i> Price
+                  </label>
+                  {{ form.price|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder:45.00"|attr:"step:0.01" }}
+                  {% if errors %}
+                    <div class="text-danger small mt-1">
+                      {% for err in errors %}
+                        <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar-x text-warning"></i> Expiry Date
+                  </label>
+                  {{ form.expiry_date|add_class:"form-control form-control-lg rounded-3 shadow-sm" }}
+                  {% if errors %}
+                    <div class="text-danger small mt-1">
+                      {% for err in errors %}
+                        <div class="d-flex align-items-start gap-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ err }}</div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Prescription Required -->
+              <div class="mb-5 p-4 bg-light rounded-4 border-start border-primary border-4">
+                <div class="form-check form-switch">
+                  {{ form.prescription_required|add_class:"form-check-input" }}
+                  <label class="form-check-label fw-bold fs-5" for="{{ form.prescription_required.id_for_label }}">
+                    <i class="bi bi-file-earmark-medical-fill text-primary me-2"></i>
+                    Prescription Required
+                  </label>
+                </div>
+                <small class="text-muted d-block mt-2">
+                  Enable if this medicine requires a valid prescription to purchase
+                </small>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex flex-column flex-md-row gap-3 justify-content-between">
+                <a href="{% url 'medicine_list' %}"
+                   class="btn btn-outline-secondary btn-lg rounded-3 px-5 d-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-arrow-left-circle"></i>
+                  Cancel & Back
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary btn-lg rounded-3 px-5 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                  <i class="bi bi-check-circle-fill"></i>
+                  {% if medicine %}Update Medicine{% else %}Add Medicine{% endif %}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Trust Badge -->
+        <div class="text-center mt-4 text-muted small">
+          <i class="bi bi-shield-check-fill text-success me-1"></i>
+          All medicine data is verified by licensed pharmacists
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Image Preview Script -->
+<script>
+document.getElementById('{{ form.image.id_for_label }}').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      let preview = document.querySelector('.current-image-preview');
+      if (!preview) {
+        preview = document.createElement('img');
+        preview.className = 'img-fluid rounded-4 shadow-lg current-image-preview mt-3';
+        preview.style.cssText = 'max-height: 200px; border: 5px solid rgba(43,138,126,0.2);';
+        document.querySelector('.card-body').insertBefore(preview, document.querySelector('form'));
+      }
+      preview.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
+  }
+});
+</script>
+
+<style>
+  .form-control:focus, .form-select:focus {
+    border-color: var(--pharma-teal) !important;
+    box-shadow: 0 0 0 0.25rem rgba(43, 138, 126, 0.15) !important;
+  }
+  .form-check-input:checked {
+    background-color: var(--pharma-teal);
+    border-color: var(--pharma-teal);
+  }
+  .btn-primary:hover, .btn-outline-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(43, 138, 126, 0.3) !important;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Add Category — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5"
+     style="background: linear-gradient(135deg, #f5fffd 0%, #e8f7f5 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+
+        <!-- Add Category Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+          <!-- Teal Gradient Header -->
+          <div class="text-white text-center py-5 px-4"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+            <i class="bi bi-tags-fill fs-1 mb-3 d-block opacity-100"></i>
+            <h2 class="fw-bold mb-2 text-white">Add New Category</h2>
+            <p class="mb-0 opacity-90">Organize medicines for easier browsing and management</p>
+          </div>
+
+          <div class="card-body p-4 p-lg-5">
+
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger rounded-3 border-0 mb-4">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ form.non_field_errors|join:" " }}
+              </div>
+            {% endif %}
+
+            <form method="POST" novalidate>
+              {% csrf_token %}
+
+              <!-- Category Name -->
+              <div class="mb-4">
+                <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold text-dark d-flex align-items-center gap-2">
+                  <i class="bi bi-tag-fill text-primary"></i>
+                  {{ form.name.label }}
+                </label>
+                {{ form.name|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"placeholder: e.g. Antibiotics, Pain Relief, Vitamins" }}
+                
+                {% if form.name.help_text %}
+                  <div class="form-text text-muted small mt-1">
+                    <i class="bi bi-info-circle me-1"></i>{{ form.name.help_text|safe }}
+                  </div>
+                {% endif %}
+
+                {% for error in form.name.errors %}
+                  <small class="text-danger mt-1 d-block">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}
+                  </small>
+                {% endfor %}
+              </div>
+
+              <!-- Description (optional) -->
+              {% if form.description %}
+              <div class="mb-4">
+                <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold text-dark d-flex align-items-center gap-2">
+                  <i class="bi bi-file-text-fill text-primary"></i>
+                  {{ form.description.label }} <span class="text-muted small">(optional)</span>
+                </label>
+                {{ form.description|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"rows:4"|attr:"placeholder: Brief description of this category..." }}
+                
+                {% for error in form.description.errors %}
+                  <small class="text-danger mt-1 d-block">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}
+                  </small>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <div class="d-flex flex-column flex-md-row gap-3 mt-5">
+                <button type="submit"
+                        class="btn btn-primary btn-lg rounded-3 flex-fill fw-bold d-flex align-items-center justify-content-center gap-2 order-md-2">
+                  <i class="bi bi-check-circle-fill"></i>
+                  Save Category
+                </button>
+              </div>
+              <!-- Action Buttons -->
+              <div class="d-flex flex-column flex-md-row gap-3 mt-5">
+                <a href="{% url 'category_list' %}"
+                   class="btn btn-outline-secondary btn-lg rounded-3 flex-fill d-flex align-items-center justify-content-center gap-2 order-md-1">
+                  <i class="bi bi-arrow-left-circle"></i>
+                  Back to Categories
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Trust footer -->
+        <div class="text-center mt-4 text-muted small">
+          <i class="bi bi-shield-check-fill text-success me-1"></i>
+          All data is securely stored • Only authorized staff can manage categories
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-control:focus, .form-control-lg:focus {
+    border-color: var(--pharma-teal);
+    box-shadow: 0 0 0 0.25rem rgba(43, 138, 126, 0.15);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(43, 138, 126, 0.3) !important;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: rgba(43, 138, 126, 0.1);
+    border-color: var(--pharma-teal);
+    color: var(--pharma-teal);
+  }
+</style>
+{% endblock %}  

@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Upload Prescription — PharmaCare{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5"
+     style="background: linear-gradient(135deg, #f5fffd 0%, #e8f7f5 100%);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+
+        <!-- Upload Card -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+          <!-- Teal Gradient Header -->
+          <div class="text-white text-center py-5 px-4 position-relative overflow-hidden"
+               style="background: linear-gradient(135deg, var(--pharma-teal), var(--pharma-teal-dark));">
+            <i class="bi bi-file-earmark-medical-fill fs-1 mb-3 d-block opacity-100"></i>
+            <h2 class="fw-bold mb-2 text-white">Upload Prescription</h2>
+            <p class="lead mb-0 opacity-100">Clear photo or PDF of your doctor’s prescription</p>
+          </div>
+
+          <div class="card-body p-5">
+
+            <form method="POST" enctype="multipart/form-data" novalidate>
+              {% csrf_token %}
+
+              <!-- Drag & Drop Upload Zone -->
+              <div class="mb-5">
+                <label class="form-label fw-bold text-primary d-flex align-items-center gap-2">
+                  <i class="bi bi-cloud-arrow-up-fill"></i> Upload Prescription
+                </label>
+
+                <div class="upload-area border-3 border-dashed rounded-4 p-5 text-center position-relative overflow-hidden
+                            {% if form.uploaded_file.errors %}border-danger{% else %}border-primary-subtle{% endif %}"
+                     id="upload-area">
+
+                  <!-- Hidden file input -->
+                  {{ form.uploaded_file|add_class:"d-none"|attr:"accept:image/*,.pdf" }}
+
+                  <!-- Preview Image -->
+                  <div id="preview-container" class="mb-4 d-none">
+                    <img id="preview-img" src="" alt="Prescription preview"
+                         class="img-fluid rounded-4 shadow-sm" style="max-height: 300px;">
+                    <div class="mt-3">
+                      <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" id="remove-preview">
+                        <i class="bi bi-x-circle"></i> Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Default Upload Prompt -->
+                  <div id="upload-prompt">
+                    <i class="bi bi-file-medical display-1 text-primary mb-4 opacity-50"></i>
+                    <h5 class="fw-bold text-dark">Drop your prescription here</h5>
+                    <p class="text-muted mb-4">or click to browse</p>
+                    <button type="button" class="btn btn-outline-primary btn-lg rounded-3 px-5" id="browse-btn">
+                      <i class="bi bi-folder2-open me-2"></i> Choose File
+                    </button>
+                  </div>
+
+                  <!-- File name display -->
+                  <div id="file-name" class="mt-3 text-success fw-bold d-none"></div>
+                </div>
+
+                <!-- Help text -->
+                <small class="text-muted d-block mt-3">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Accepted: JPG, PNG, PDF • Max 10MB • Clear & readable
+                </small>
+
+                <!-- Errors -->
+                {% for error in form.uploaded_file.errors %}
+                  <small class="text-danger d-block mt-2">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}
+                  </small>
+                {% endfor %}
+              </div>
+
+              <!-- Optional Notes -->
+              {% if form.notes %}
+              <div class="mb-5">
+                <label for="{{ form.notes.id_for_label }}" class="form-label fw-semibold d-flex align-items-center gap-2">
+                  <i class="bi bi-chat-text text-primary"></i> Additional Notes (Optional)
+                </label>
+                {{ form.notes|add_class:"form-control form-control-lg rounded-3 shadow-sm"|attr:"rows:4"|attr:"placeholder:Any special instructions for the pharmacist..." }}
+                {% for error in form.notes.errors %}
+                  <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              <!-- Action Buttons -->
+              
+              <div class="d-flex flex-column flex-md-row gap-3">
+                <button type="submit"
+                        class="btn btn-primary btn-lg w-100 rounded-3 px-5 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                  <i class="bi bi-cloud-check-fill"></i>
+                  Upload & Submit
+                </button>
+              </div>
+              <div class="d-flex flex-column flex-md-row gap-3  mt-2">
+                <a href="{% url 'prescription_list' %}"
+                   class="btn btn-outline-secondary w-100 btn-lg rounded-3 px-5 d-flex align-items-center justify-content-center gap-2">
+                  <i class="bi bi-arrow-left-circle"></i> Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Trust Badge -->
+        <div class="text-center mt-4 text-muted small">
+          <i class="bi bi-shield-lock-fill text-success me-1"></i>
+          Your prescription is encrypted • Only verified pharmacists can view
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drag & Drop + Preview Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const fileInput = document.querySelector("input[type='file']");
+  const uploadArea = document.getElementById("upload-area");
+  const previewContainer = document.getElementById("preview-container");
+  const previewImg = document.getElementById("preview-img");
+  const uploadPrompt = document.getElementById("upload-prompt");
+  const fileNameDisplay = document.getElementById("file-name");
+  const browseBtn = document.getElementById("browse-btn");
+  const removeBtn = document.getElementById("remove-preview");
+
+  function handleFile(file) {
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      alert("Please upload JPG, PNG, or PDF only");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      uploadPrompt.classList.add("d-none");
+      previewContainer.classList.remove("d-none");
+      fileNameDisplay.textContent = file.name;
+      fileNameDisplay.classList.remove("d-none");
+
+      previewImg.src =
+        file.type === 'application/pdf'
+          ? "/static/img/pdf-preview.png"
+          : e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* ✅ Upload area click */
+  uploadArea.addEventListener("click", () => fileInput.click());
+
+  /* ✅ Browse button click — STOP bubbling */
+  browseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  /* ✅ Drag styling */
+  ['dragenter', 'dragover'].forEach(evt => {
+    uploadArea.addEventListener(evt, e => {
+      e.preventDefault();
+      uploadArea.classList.add('border-primary', 'bg-primary-subtle');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(evt => {
+    uploadArea.addEventListener(evt, e => {
+      e.preventDefault();
+      uploadArea.classList.remove('border-primary', 'bg-primary-subtle');
+    });
+  });
+
+  uploadArea.addEventListener("drop", e => {
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  /* ✅ File input change */
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files.length) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  /* ✅ Remove preview */
+  removeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput.value = "";
+    previewContainer.classList.add("d-none");
+    uploadPrompt.classList.remove("d-none");
+    fileNameDisplay.classList.add("d-none");
+  });
+});
+</script>
+
+<style>
+  .upload-area {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: rgba(43,138,126,0.02);
+  }
+  .upload-area:hover {
+    background: rgba(43,138,126,0.08) !important;
+    border-color: var(--pharma-teal) !important;
+  }
+  .upload-area.border-danger {
+    background: rgba(220,53,69,0.05);
+  }
+  .btn:hover {
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+  }
+</style>
+{% endblock %}
